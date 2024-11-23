@@ -1,6 +1,5 @@
-// src/components/ImageUpload.js
-
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const ImageUpload = () => {
     const [image, setImage] = useState(null);
@@ -16,7 +15,7 @@ const ImageUpload = () => {
 
     const handleUpload = async () => {
         if (!image) {
-            alert('Please select an image to upload');
+            toast.error('Please select an image to upload');
             return;
         }
 
@@ -24,7 +23,7 @@ const ImageUpload = () => {
 
         const formData = new FormData();
         formData.append('file', image);
-        //gon upload preset
+        // Cloudinary upload preset
         formData.append('upload_preset', 'j7lt6mev'); // Use your Cloudinary unsigned preset
 
         try {
@@ -41,7 +40,9 @@ const ImageUpload = () => {
             console.log('Uploading:', image);
             console.log('Cloudinary response:', jsonData);
             setUploadedImageUrl(jsonData.secure_url); // Set the uploaded image URL to display it
+            toast.success('Image uploaded successfully');
         } catch (error) {
+            toast.error('Failed to upload image');
             console.error('Error uploading image:', error);
         } finally {
             setIsLoading(false);
@@ -50,8 +51,23 @@ const ImageUpload = () => {
 
     const uploadBtnClasses = `w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:bg-blue-600 ${isLoading ? 'cursor-not-allowed' : ''}`;
 
+    const handleCopy = () => {
+        // Get the text field
+        const copyText = document.getElementById("uploadedImageUrl");
+
+        // Select the text field
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // For mobile devices
+
+        // Copy the text inside the text field
+        navigator.clipboard.writeText(copyText.value);
+
+        // Alert the copied text
+        toast.success("Copied the text");
+    };
+
     return (
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-4">
+        <div className="md:w-1/2 mx-auto bg-white rounded-lg shadow-md p-4">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Upload Image</h2>
             <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
@@ -64,17 +80,34 @@ const ImageUpload = () => {
                     onChange={handleImageChange}
                 />
             </div>
-            {preview && (
-                <div className="mb-4">
-                    <img src={preview} alt="Preview" className="w-full h-auto rounded-lg" />
-                </div>
-            )}
-            {uploadedImageUrl && (
-                <div className="mb-4">
-                    <p className="text-green-600 font-bold">Image uploaded successfully!</p>
-                    <img src={uploadedImageUrl} alt="Uploaded" className="w-full h-auto rounded-lg" />
-                </div>
-            )}
+
+            <div className='flex gap-5'>
+                {preview && (
+                    <div className="mb-4">
+                        <img src={preview} alt="Preview" className="w-full h-auto rounded-lg" />
+                    </div>
+                )}
+                {uploadedImageUrl && (
+                    <div className="mb-4">
+                        <img src={uploadedImageUrl} alt="Uploaded" className="w-full h-auto rounded-lg" />
+                    </div>
+                )}
+            </div>
+            <div className="my-5 flex">
+                <input
+                    type="text"
+                    value={uploadedImageUrl}
+                    id="uploadedImageUrl"
+                    readOnly
+                    className="flex-grow py-2 px-3 border-2 border-gray-400 rounded-l"
+                />
+                <button
+                    onClick={handleCopy}
+                    className="bg-blue-500 text-white py-2 px-4 rounded-r hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+                >
+                    Copy URL
+                </button>
+            </div>
             <button
                 onClick={handleUpload}
                 className={uploadBtnClasses}
@@ -86,5 +119,3 @@ const ImageUpload = () => {
 };
 
 export default ImageUpload;
-
-
